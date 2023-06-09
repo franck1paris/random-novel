@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="random-novelFlow" doc:id="40642680-0aa4-4792-87ff-1eeb1b9ad2a1" >
+		<scheduler doc:name="Scheduler" doc:id="5e32fcd9-513d-40e1-abaf-b23df7bcb1c7" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="30" timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<logger level="INFO" doc:name="Before dictionnary call" doc:id="4acb9742-e341-4504-89a6-e4faa3548afb" message="Before dictionnary call"/>
+		<http:request method="GET" doc:name="GET word from Littre " doc:id="f3245246-4ce8-45d7-80d2-3713bc516d75" url="https://www.littre.org/recherche"/>
+		<set-payload value='#[import * from dw::core::Strings&#10;output application/json&#10;var h2Div = substringBefore(substringAfter(payload, "h2&gt;"), "&lt;/h2")&#10;---&#10;if (h2Div contains ",")&#10;    substringBefore(h2Div, ",")&#10;else&#10;    h2Div]' doc:name="Extract word from HTML" doc:id="b936b100-e31a-4096-9979-38d96c0f00ec" />
+		<logger level="INFO" doc:name="After dictionnary call" doc:id="77c9c7fc-5dd5-4840-ab98-349b826f536b" message="After dictionnary call, the word is: #[payload]"/>
+	</flow>
+</mule>
