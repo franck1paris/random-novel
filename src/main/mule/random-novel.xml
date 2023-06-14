@@ -5,15 +5,76 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="fetch-littre-word" doc:id="8a80b740-b42c-41d3-a473-0c7c4141fcb0">
+		<logger level="INFO" doc:name="Before dictionnary call" doc:id="4acb9742-e341-4504-89a6-e4faa3548afb" message="Before dictionnary call" />
+		<http:request method="GET" doc:name="GET word from Littre " doc:id="f3245246-4ce8-45d7-80d2-3713bc516d75" url="${littre.url}" target="responseLittre"/>
+		<set-variable value='#[import * from dw::core::Strings&#10;output application/json&#10;var h2Div = substringBefore(substringAfter(vars.responseLittre, "h2&gt;"), "&lt;/h2")&#10;var h2DivTrim = if (h2Div contains " ") substringBefore(h2Div, " ") else h2Div&#10;---&#10;if (h2DivTrim contains ",")&#10;    substringBefore(h2DivTrim, ",")&#10;else&#10;    h2DivTrim]' doc:name="Extract word from HTML" doc:id="0b47825f-3fe5-40fe-a606-ae3f12054412" variableName="word"/>
+		<choice doc:name="Choice" doc:id="ca43b4b8-d58c-4b6f-92b5-890b4b76b077" >
+			<when expression="#[isEmpty(vars.word)]">
+				<logger level="INFO" doc:name="After dictionnary call" doc:id="2e5d89c8-d2b3-4d02-85ec-552e3ebd7e82" message="After dictionnary call, the word was lost, fetching a new one." />
+				<flow-ref doc:name="fetch-littre-word" doc:id="4b9e9bcb-9fd9-47b0-8300-49b6cfeb6d9f" name="fetch-littre-word" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="After dictionnary call" doc:id="77c9c7fc-5dd5-4840-ab98-349b826f536b" message="After dictionnary call, the word is: #[vars.word]" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="translate-word" doc:id="c167ca1d-7a89-4135-99c3-79b16f3ad040" >
+		<logger level="INFO" doc:name="Before DeepL call" doc:id="00c896f9-9107-47b9-abcf-3044aad67f49" message='#["Translation from " ++ vars.source_lang ++ " into " ++ vars.target_lang]' />
+		<set-variable value='#[%dw 2.0&#10;output application/x-www-form-urlencoded&#10;---&#10;{&#10;  "text": vars.word,&#10;  "source_lang": vars.source_lang default "FR",&#10;  "target_lang": vars.target_lang default "EN"&#10;}]' doc:name="Format request body" doc:id="4a60c473-20c0-4c43-8962-24879849cbb0" variableName="deepl_body"/>
+		<http:request method="POST" doc:name="GET translate from DeepL" doc:id="d25c8509-3dcc-429f-9091-608a14563128" config-ref="DeepL_HTTP_Request_configuration" path="${deepl.path}" target="responseDeepl">
+			<http:body ><![CDATA[#[vars.deepl_body]]]></http:body>
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"Authorization" : "DeepL-Auth-Key " ++ p("secure::deepl.auth.key")
+}]]]></http:headers>
+		</http:request>
+		<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;vars.responseDeepl.translations[0].text]' doc:name="Extract word from JSON" doc:id="5481a2f4-9518-4dff-8c1c-3802a13d7b06" variableName="word" />
+		<logger level="INFO" doc:name="After DeepL call" doc:id="1fb51740-59f0-4e66-a546-ee16bac2a07a" message='#[output application/json&#10;---&#10;"After translation in " ++ vars.target_lang ++ ": " ++ vars.word]' />
+	</sub-flow>
 	<flow name="random-novelFlow" doc:id="40642680-0aa4-4792-87ff-1eeb1b9ad2a1" >
 		<scheduler doc:name="Scheduler" doc:id="5e32fcd9-513d-40e1-abaf-b23df7bcb1c7" >
 			<scheduling-strategy >
 				<fixed-frequency frequency="30" timeUnit="MINUTES"/>
 			</scheduling-strategy>
 		</scheduler>
-		<logger level="INFO" doc:name="Before dictionnary call" doc:id="4acb9742-e341-4504-89a6-e4faa3548afb" message="Before dictionnary call"/>
-		<http:request method="GET" doc:name="GET word from Littre " doc:id="f3245246-4ce8-45d7-80d2-3713bc516d75" url="https://www.littre.org/recherche"/>
-		<set-payload value='#[import * from dw::core::Strings&#10;output application/json&#10;var h2Div = substringBefore(substringAfter(payload, "h2&gt;"), "&lt;/h2")&#10;---&#10;if (h2Div contains ",")&#10;    substringBefore(h2Div, ",")&#10;else&#10;    h2Div]' doc:name="Extract word from HTML" doc:id="b936b100-e31a-4096-9979-38d96c0f00ec" />
-		<logger level="INFO" doc:name="After dictionnary call" doc:id="77c9c7fc-5dd5-4840-ab98-349b826f536b" message="After dictionnary call, the word is: #[payload]"/>
+		<flow-ref doc:name="fetch-littre-word" doc:id="a49de072-5762-40c8-b01c-33a2d6c49660" name="fetch-littre-word" />
+		<ee:transform doc:name="Set lang_array, init prev_lang" doc:id="433fe1f0-2f59-4f7c-be7f-cf941c91dac8" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="lang_array" ><![CDATA[%dw 2.0
+output application/json
+---
+[ "JA", "DE", "PL", "IT", "NL", "FR" ]]]></ee:set-variable>
+				<ee:set-variable variableName="prev_lang" ><![CDATA[%dw 2.0
+output application/json
+---
+"FR"]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<foreach doc:name="For Each lang in the array" doc:id="d7b0d7f5-3f83-4da8-8d09-d168a2c5e2ae" collection="#[vars.lang_array]">
+			<ee:transform doc:name="set variables text, source_lang, target_lang" doc:id="cd83f9bc-13d6-42c5-a5df-657d8206e7f7">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="source_lang"><![CDATA[%dw 2.0
+output application/json
+---
+vars.prev_lang]]></ee:set-variable>
+				<ee:set-variable variableName="target_lang"><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-variable>
+				<ee:set-variable variableName="text"><![CDATA[%dw 2.0
+output application/json
+---
+vars.word]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+			<flow-ref doc:name="translate-word" doc:id="a3df2326-b43e-4b3a-857d-5e85a6d6c0c3" name="translate-word" />
+			<set-variable doc:name="Update prev_lang" doc:id="3b74100f-ae69-4cfc-82c3-d2353b374719" variableName="prev_lang" value="#[payload]" />
+		</foreach>
 	</flow>
 </mule>
