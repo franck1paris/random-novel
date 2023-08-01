@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="0dd007c6-8f86-438e-b344-7b6b7af01e86" >
+		<http:request-connection host="128.0.0.1" port="8081" />
+	</http:request-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="95dcac6d-d8ee-4eb8-9cd2-42c3666fc0bd" >
+		<file:connection workingDir="C:\Users\franc\AnypointStudio\studio-workspace\random-novel\src\main\resources\assests" />
+	</file:config>
+	<os:object-store name="Stats" doc:name="Object store" doc:id="ea437885-e0de-469b-b74f-71acebc4db02" persistent="false" />
+	<sub-flow name="motivational-verifier" doc:id="dd005f64-7c68-4cee-b378-de90edf2a148" >
+		<set-payload value='#[%dw 2.0
+output application/json
+---
+[
+  {
+    "time": "20",
+    "motivation": 100.0
+  },
+  {
+    "time": "0",
+    "motivation": 5.0
+  },
+  {
+    "time": "1",
+    "motivation": 2.5
+  },
+  {
+    "time": "8",
+    "motivation": 15.0
+  },
+  {
+    "time": "9",
+    "motivation": 12.5
+  },
+  {
+    "time": "10",
+    "motivation": 10.0
+  },
+  {
+    "time": "11",
+    "motivation": 10.0
+  },
+  {
+    "time": "12",
+    "motivation": 10.0
+  },
+  {
+    "time": "15",
+    "motivation": 2.5
+  },
+  {
+    "time": "23",
+    "motivation": 100.0
+  }
+]]' doc:name="Motivation array" doc:id="acaccb29-af15-469b-ad0b-e435598d0f15" />
+		<set-variable value='#[%dw 2.0
+var currentHour = now() as String {format: "HH"}
+output application/json
+---
+(payload filter(value, index) -&gt; (value.time == currentHour))[0]]' doc:name="Extract current motivation" doc:id="04db6859-4299-4ac8-b5f5-fa386467179b" variableName="currentMotivation"/>
+		<set-variable value="#[%dw 2.0
+var randomPick = (round((randomInt(100) + randomInt(100) + randomInt(100)) / 3) + 1)
+output application/json
+---
+(randomPick &lt;= (vars.currentMotivation.motivation default -1))]" doc:name="Calculate isMotivated" doc:id="e8b2d5e8-5b17-40be-ad40-7fd5ecb9d6aa" variableName="isMotivated"/>
+		<file:write doc:id="42f0e6b0-d0e8-4b2e-9021-87970a9f9c82" config-ref="File_Config" path="proba.csv" mode="APPEND" doc:name="Write content">
+			<file:content><![CDATA[#[%dw 2.0
+var randomPick = (round((randomInt(100) + randomInt(100) + randomInt(100)) / 3) + 1)
+var dateTime = (now() as String {format: "dd_MM-HH_mm"})
+output application/csv header=false
+---
+{
+	"randomPick": randomPick,
+	"motivation": (randomPick <= (vars.currentMotivation.motivation default -1)),
+	"date": dateTime
+}]]]></file:content>
+		</file:write>
+<!-- [STUDIO:"Store"]		<os:store doc:name="Store" doc:id="b5a13de5-f4f7-45bd-b297-e7c50837f972" key='#["stat_" ++ now() as String {format: "HH-mm"}]' objectStore="Stats">
+			<os:value ><![CDATA[#[%dw 2.0
+var randomPick = (round((randomInt(100) + randomInt(100) + randomInt(100)) / 3) + 1)
+output application/json
+&#45;&#45;-
+{
+	"randomPick": randomPick,
+	"motivation": (randomPick <= (vars.currentMotivation.motivation default -1))
+}]]]></os:value>
+		</os:store> [STUDIO] -->
+	</sub-flow>
+	<flow name="motivationFlow" doc:id="fefad3f7-b2db-4ab7-aa7d-3cba9ea50019" >
+		<scheduler doc:name="Scheduler" doc:id="23c46654-876d-4a90-a623-06ce7cef2a67" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="30" timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<try doc:name="Try" doc:id="aa7593e4-ebe1-4d72-b6a4-0b5a4ff90721" >
+			<file:read doc:name="Read" doc:id="a1d6400c-3665-4ad4-9b66-dc9df8cc4000" config-ref="File_Config" path="proba.csv" target="contentFile" />
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="4da61053-37f8-4e59-92a9-fe1b0f064101" >
+					<set-variable value="" doc:name="Empty contentFile" doc:id="bce40899-3971-4b2e-8ff2-4cd01e037626" variableName="contentFile"/>
+				</on-error-continue>
+			</error-handler>
+		</try>
+		<choice doc:name="Choice" doc:id="c9e78bb3-2086-4951-8ed3-cf253966706b" >
+			<when expression='#[isEmpty(vars.contentFile)]'>
+				<file:write doc:name="Write header" doc:id="12c922c2-0830-43c7-b777-b258e9fb4cb6" config-ref="File_Config" path="proba.csv" mode="APPEND">
+			<file:content><![CDATA[#[%dw 2.0
+output application/csv header=false
+---
+{
+	"randomPick": "randomPick",
+	"motivation": "motivation",
+	"date": "date"
+}]]]></file:content>
+		</file:write>
+			</when>
+			<otherwise >
+				<flow-ref doc:name="motivational-verifier" doc:id="b9359243-fc75-400a-8e4b-e9dd36632ab7" name="motivational-verifier" />
+			</otherwise>
+		</choice>
+<!-- [STUDIO:"Choice"]		<choice doc:name="Choice" doc:id="09e2b401-298f-4887-ae34-f3a1705db4ca" >
+			<when expression="#[vars.isMotivated]">
+<logger level="INFO" doc:name="Start writing" doc:id="67c72425-25f2-4061-aee2-2c56db8cb216" message="Okey let's do this!" />
+				<!&#45;&#45; [STUDIO:"Start writing session"]				<http:request method="GET" doc:name="Start writing session" doc:id="0929988e-b176-4b05-b88e-80d4bf83d6d5" config-ref="HTTP_Request_configuration" path="/start-session" /> [STUDIO] &#45;&#45;>
+				<logger level="INFO" doc:name="Finished writing" doc:id="dc983538-3775-4e94-a7c1-acc90532038d" message="And that's it! For now at least..." />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Not writing now" doc:id="7e2ff1bf-13f0-4083-91be-bfbbda3736ce" message="Not feeling it right now... Let's play a bit before I start."/>
+			</otherwise>
+		</choice> [STUDIO] -->
+	
+</flow>
+	<flow name="motivationFlow1" doc:id="5d4ebe5c-5b5e-4ebd-8de3-534f4f90fe1e" >
+		<http:listener doc:name="Listener" doc:id="1a2218a5-bced-424c-9286-d19af837f117" config-ref="HTTP_Listener_config" path="/stats"/>
+		<os:retrieve-all doc:name="Retrieve all" doc:id="37b6a424-60d1-4080-a971-146bfcdec462" objectStore="Stats"/>
+		<ee:transform doc:name="Transform Message" doc:id="0c873538-5c36-48a5-80c5-987d4d661ece" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+(payload mapObject ((value, index) -> {(index) : read(value, "application/json")}))]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

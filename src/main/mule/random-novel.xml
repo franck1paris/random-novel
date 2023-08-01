@@ -5,6 +5,9 @@
 	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="2a557750-2e22-496c-ad90-705173848a01" basePath="/" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
 	<sub-flow name="fetch-littre-word" doc:id="8a80b740-b42c-41d3-a473-0c7c4141fcb0">
 		<logger level="INFO" doc:name="Before dictionnary call" doc:id="4acb9742-e341-4504-89a6-e4faa3548afb" message="Before dictionnary call" />
 		<http:request method="GET" doc:name="GET word from Littre " doc:id="f3245246-4ce8-45d7-80d2-3713bc516d75" url="${littre.url}" target="responseLittre"/>
@@ -33,12 +36,8 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;vars.responseDeepl.translations[0].text]' doc:name="Extract word from JSON" doc:id="5481a2f4-9518-4dff-8c1c-3802a13d7b06" variableName="word" />
 		<logger level="INFO" doc:name="After DeepL call" doc:id="1fb51740-59f0-4e66-a546-ee16bac2a07a" message='#[output application/json&#10;---&#10;"After translation in " ++ vars.target_lang ++ ": " ++ vars.word]' />
 	</sub-flow>
-	<flow name="random-novelFlow" doc:id="40642680-0aa4-4792-87ff-1eeb1b9ad2a1" >
-		<scheduler doc:name="Scheduler" doc:id="5e32fcd9-513d-40e1-abaf-b23df7bcb1c7" >
-			<scheduling-strategy >
-				<fixed-frequency frequency="30" timeUnit="MINUTES"/>
-			</scheduling-strategy>
-		</scheduler>
+	<flow name="writing-session" doc:id="40642680-0aa4-4792-87ff-1eeb1b9ad2a1" >
+		<http:listener doc:name="Start session" doc:id="fceb0623-b41b-4914-a524-887d3b82a227" config-ref="HTTP_Listener_config" path="start-session"/>
 		<flow-ref doc:name="fetch-littre-word" doc:id="a49de072-5762-40c8-b01c-33a2d6c49660" name="fetch-littre-word" />
 		<ee:transform doc:name="Set lang_array, init prev_lang" doc:id="433fe1f0-2f59-4f7c-be7f-cf941c91dac8" >
 			<ee:message >
