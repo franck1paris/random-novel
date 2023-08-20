@@ -93,10 +93,57 @@ output application/json
 }]]]></os:value>
 		</os:store> [STUDIO] -->
 	</sub-flow>
+	<sub-flow name="motivational-verifier-seconds" doc:id="191a7a4e-30f8-49dc-ac7d-040000ffd518" >
+		<set-payload value='#[%dw 2.0&#10;output application/json&#10;---&#10;[{&#10;	"time": 0,&#10;	"motivation": 15.0&#10;},
+  {&#10;	"time": 1,&#10;	"motivation": 15.0&#10;},
+  {&#10;	"time": 2,&#10;	"motivation": 7.5&#10;},
+  {&#10;	"time": 8,&#10;	"motivation": 45.0&#10;},
+  {&#10;	"time": 9,&#10;	"motivation": 37.5&#10;},
+  {&#10;	"time": 10,&#10;	"motivation": 37.5&#10;},
+  {&#10;	"time": 10,&#10;	"motivation": 30.0&#10;},
+  {&#10;	"time": 11,&#10;	"motivation": 30.0&#10;},
+  {&#10;	"time": 12,&#10;	"motivation": 30.0&#10;},
+  {&#10;	"time": 13,&#10;	"motivation": 7.5&#10;},
+  {&#10;	"time": 14,&#10;	"motivation": 7.5&#10;},
+  {&#10;	"time": 15,&#10;	"motivation": 7.5&#10;},
+  {&#10;	"time": 23,&#10;	"motivation": 100.0&#10;}]]' doc:name="Motivation array" doc:id="18d0cf85-e973-4862-86eb-7ebdb18c671d" />
+		<set-variable value='#[%dw 2.0
+var currentHour = now() as String {format: "HH"}
+output application/json
+---
+(payload filter(value, index) -&gt; (value.time == currentHour))[0]]' doc:name="Extract current motivation" doc:id="025e961c-05aa-4617-b910-c9becc5cdb6f" variableName="currentMotivation"/>
+		<set-variable value="#[%dw 2.0
+var randomPick = (round((randomInt(100) + randomInt(100) + randomInt(100)) / 3) + 1)
+output application/json
+---
+(randomPick &lt;= (vars.currentMotivation.motivation default -1))]" doc:name="Calculate isMotivated" doc:id="c31bf97d-929d-432a-aaed-9ae537527243" variableName="isMotivated"/>
+		<file:write doc:id="30b26619-fd6f-45e7-9b3e-2382b3536a4c" config-ref="File_Config" path="proba.csv" mode="APPEND" doc:name="Write content">
+			<file:content><![CDATA[#[%dw 2.0
+var randomPick = (round((randomInt(100) + randomInt(100) + randomInt(100)) / 3) + 1)
+var dateTime = (now() as String {format: "dd_MM-HH_mm"})
+output application/csv header=false
+---
+{
+	"randomPick": randomPick,
+	"motivation": (randomPick <= (vars.currentMotivation.motivation default -1)),
+	"date": dateTime
+}]]]></file:content>
+		</file:write>
+<!-- [STUDIO:"Store"]		<os:store doc:name="Store" doc:id="95918c1a-3580-4e8f-a6ba-0c097cb90956" key='#["stat_" ++ now() as String {format: "HH-mm"}]' objectStore="Stats">
+			<os:value ><![CDATA[#[%dw 2.0
+var randomPick = (round((randomInt(100) + randomInt(100) + randomInt(100)) / 3) + 1)
+output application/json
+&#45;&#45;-
+{
+	"randomPick": randomPick,
+	"motivation": (randomPick <= (vars.currentMotivation.motivation default -1))
+}]]]></os:value>
+		</os:store> [STUDIO] -->
+	</sub-flow>
 	<flow name="motivationFlow" doc:id="fefad3f7-b2db-4ab7-aa7d-3cba9ea50019" >
 		<scheduler doc:name="Scheduler" doc:id="23c46654-876d-4a90-a623-06ce7cef2a67" >
 			<scheduling-strategy >
-				<fixed-frequency frequency="30" timeUnit="MINUTES"/>
+				<fixed-frequency frequency="1" timeUnit="SECONDS"/>
 			</scheduling-strategy>
 		</scheduler>
 		<try doc:name="Try" doc:id="aa7593e4-ebe1-4d72-b6a4-0b5a4ff90721" >
@@ -121,7 +168,7 @@ output application/csv header=false
 		</file:write>
 			</when>
 			<otherwise >
-				<flow-ref doc:name="motivational-verifier" doc:id="b9359243-fc75-400a-8e4b-e9dd36632ab7" name="motivational-verifier" />
+				<flow-ref doc:name="motivational-verifier-seconds" doc:id="b9359243-fc75-400a-8e4b-e9dd36632ab7" name="motivational-verifier-seconds" />
 			</otherwise>
 		</choice>
 <!-- [STUDIO:"Choice"]		<choice doc:name="Choice" doc:id="09e2b401-298f-4887-ae34-f3a1705db4ca" >

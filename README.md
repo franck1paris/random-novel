@@ -9,19 +9,19 @@ The 500,000 characters limit will be disctributed along the month based on the n
 On the working days, we have to establish a schedule also. The random has again to play it's part here to establish if the algorithm wants to write the novel at that time or not, based on this table:
 | Time | Want to work (%) |
 |-------|------------------|
-| 00:00 | 05.0 |
-| 01:00 | 02.5 |
-| 02:00 | 00.0 |
+| 00:00 | 15.0 |
+| 01:00 | 15.5 |
+| 02:00 | 07.5 |
 | 03:00 | 00.0 |
 | ..... | 00.0 |
-| 08:00 | 15.0 |
-| 09:00 | 12.5 |
-| 10:00 | 10.0 |
-| 11:00 | 10.0 |
-| 12:00 | 10.0 |
-| 13:00 | 00.0 |
-| 14:00 | 00.0 |
-| 15:00 | 02.5 |
+| 08:00 | 45.0 |
+| 09:00 | 37.5 |
+| 10:00 | 37.5 |
+| 11:00 | 30.0 |
+| 12:00 | 30.0 |
+| 13:00 | 07.5 |
+| 14:00 | 07.5 |
+| 15:00 | 07.5 |
 | ..... | 00.0 |
-| 23:00 | 32.5 |
+| 23:00 | 100  |
 To keep in mind: there is a quota of characters to write per day which means that each days between 23:00 and 23:59 the "want to work" percentage is more a rush of what is left to write.
