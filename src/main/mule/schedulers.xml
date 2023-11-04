@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="motivation-check" doc:id="787c2279-3f40-45da-b112-2b834094eb9a" >
+		<scheduler doc:name="20mn" doc:id="1709f95d-1c9e-4a75-96b3-336ce22a4761" >
+			<scheduling-strategy >
+				<fixed-frequency frequency="20" timeUnit="MINUTES" />
+			</scheduling-strategy>
+		</scheduler>
+		<flow-ref doc:name="motivation-core" doc:id="604d91ec-c940-434f-9997-685eb7a0c35c" name="motivation-core" />
+	</flow>
+</mule>

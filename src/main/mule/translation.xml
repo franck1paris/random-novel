@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<sub-flow name="translate-word" doc:id="e3c1df99-00e5-458e-83c6-1a7b2bf3e618" >
+		<logger level="INFO" doc:name="Before DeepL call" doc:id="169446cb-c874-49fb-a02d-12139a908ea4" message='#["Translation from " ++ vars.source_lang ++ " into " ++ vars.target_lang]' />
+		<set-variable value='#[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{
+  "text": vars.word,
+  "source_lang": vars.source_lang default "FR",
+  "target_lang": vars.target_lang default "EN"
+}]' doc:name="Format request body" doc:id="ae8ebecf-f131-4305-8f42-7bd198a44eda" variableName="deepl_body" />
+		<choice doc:name="Choice" doc:id="dbc3ead3-491b-44cd-acbe-ee0b80b0720e" >
+			<when expression="#[(vars.charactersTranslatedMonthly as Number) &lt; (p(&quot;deepl.monthlyLimit&quot;) as Number) and (vars.charactersTranslatedDaily as Number) &lt; (p('deepl.dailyLimit') as Number)]" >
+				<http:request method="POST" doc:name="GET translate from DeepL" doc:id="2266a843-7ba7-404b-b8d4-a829519bcbd6" url="https://${deepl.host}${deepl.path}" target="responseDeepl" >
+					<http:body ><![CDATA[#[vars.deepl_body]]]></http:body>
+					<http:headers ><![CDATA[#[output application/java
+---
+{
+	"Authorization" : "DeepL-Auth-Key " ++ p("secure::deepl.auth.key")
+}]]]></http:headers>
+				</http:request>
+				<ee:transform doc:name="set charactersTranslated, extract word" doc:id="616ccde8-f266-4b45-bc2d-30352d14118b" >
+					<ee:message />
+					<ee:variables >
+						<ee:set-variable variableName="word" ><![CDATA[%dw 2.0
+output application/json
+---
+vars.responseDeepl.translations[0].text]]></ee:set-variable>
+						<ee:set-variable variableName="charactersTranslatedDaily" ><![CDATA[%dw 2.0
+output application/json
+---
+(vars.charactersTranslatedDaily default 0) + (sizeOf(vars.word) default 0)]]></ee:set-variable>
+						<ee:set-variable variableName="charactersTranslatedMonthly" ><![CDATA[%dw 2.0
+output application/json
+---
+(vars.charactersTranslatedMonthly default 0) + (sizeOf(vars.word) default 0)]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Over limit" doc:id="f30df1ff-03f0-472c-946c-e72c57dd0d36" message="Over the translation limit" />
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="After DeepL call" doc:id="150c711a-78f5-4c76-a052-547cc490421c" message='#[output application/json
+---
+"After translation in " ++ vars.target_lang ++ ": " ++ vars.word]' />
+	</sub-flow>
+</mule>

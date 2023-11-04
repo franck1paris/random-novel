@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="POST-start-session" doc:id="7d9aaf19-4dd9-43c5-b555-36ea118706a3" >
+		<http:listener doc:name="Start session" doc:id="1875cca9-5ee7-4990-b1e0-e57ccfb89043" config-ref="HTTP_Listener_config" path="start-session" allowedMethods="POST"/>
+		<flow-ref doc:name="writing-session" doc:id="d3883bdf-6fb6-4e98-a652-eaf5c56ee93d" name="writing-session" />
+	</flow>
+	<flow name="GET-stats" doc:id="4f103d2c-2b91-4884-accb-1a72840ef0b0" >
+		<http:listener doc:name="Listener" doc:id="8d28b404-1cad-4e1d-abd2-e5c5df672910" config-ref="HTTP_Listener_config" path="/stats" allowedMethods="GET"/>
+		<flow-ref doc:name="print-statistics" doc:id="6b1488e2-f147-41bb-bf22-a35b4c83aa0c" name="print-statistics" />
+	</flow>
+	<flow name="GET-novel-content" doc:id="1eb39dac-0c81-44b1-a949-d98af06f5954" >
+		<http:listener doc:name="Listener" doc:id="1cc19b0c-6278-4551-824d-f0254588ba19" config-ref="HTTP_Listener_config" path="/novel-content" allowedMethods="GET"/>
+		<flow-ref doc:name="print-novel" doc:id="9ad50f63-9ec0-43ab-bf35-7f999b7bd8b1" name="print-novel"/>
+	</flow>
+</mule>

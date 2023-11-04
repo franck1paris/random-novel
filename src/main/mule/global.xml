@@ -1,21 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties" xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd 
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd">
-	<http:request-config name="DeepL_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="831faeb5-f60e-45f3-802c-5f05997fa444">
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="2a557750-2e22-496c-ad90-705173848a01" basePath="/" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="DeepL_HTTP_Request_configuration" doc:name="DeepL HTTP Request configuration" doc:id="831faeb5-f60e-45f3-802c-5f05997fa444">
 		<http:request-connection protocol="HTTPS" host="${deepl.host}" port="${deepl.port}"/>
 		<http:default-headers >
 		</http:default-headers>
 	
-</http:request-config>
+	</http:request-config>
 	<configuration-properties doc:name="Configuration properties" doc:id="690c0ea6-fe21-436a-bbf3-86f1c86bc982" file="properties/configuration-${mule.env}.yaml" />
 	<global-property doc:name="Global Property" doc:id="3a5ea556-5bdb-48a1-a4f0-01b5ca5c6265" name="mule.env" value="dev" />
 	<global-property doc:name="Global Property" doc:id="a2fe0cb2-2d9e-4a51-b400-c44e4d584034" name="encryption.key" value="?4qSS5_aikbcMPz" />
 	<secure-properties:config name="Secure_Properties_Config" doc:name="Secure Properties Config" doc:id="d980e89c-cc0a-491e-ad0a-a8702bc31eab" file="properties/secure-configuration-${mule.env}.yaml" key="${encryption.key}" >
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="95dcac6d-d8ee-4eb8-9cd2-42c3666fc0bd" >
+		<file:connection workingDir="C:\Users\franc\AnypointStudio\studio-workspace\random-novel\src\main\resources\assests" />
+	</file:config>
+	<os:object-store name="Object_store_Stats" doc:name="Stats Object store" doc:id="ea437885-e0de-469b-b74f-71acebc4db02" persistent="false" />
+	<os:object-store name="Object_store_Monitoring" doc:name="Monitoring Object store" doc:id="f2eb8abd-c479-4967-84d2-2d566d3d8d2d" />
 </mule>
