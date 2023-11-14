@@ -12,23 +12,23 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 output application/json
 ---
 [{
-	"time": "0",
+	"time": "00",
 	"motivation": 15.0
 },
   {
-	"time": "1",
+	"time": "01",
 	"motivation": 15.0
 },
   {
-	"time": "2",
+	"time": "02",
 	"motivation": 7.5
 },
   {
-	"time": "8",
+	"time": "08",
 	"motivation": 45.0
 },
   {
-	"time": "9",
+	"time": "09",
 	"motivation": 37.5
 },
   {

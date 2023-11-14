@@ -25,7 +25,7 @@ http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/cu
 		<secure-properties:encrypt algorithm="Blowfish" />
 	</secure-properties:config>
 	<file:config name="File_Config" doc:name="File Config" doc:id="95dcac6d-d8ee-4eb8-9cd2-42c3666fc0bd" >
-		<file:connection workingDir="C:\Users\franc\AnypointStudio\studio-workspace\random-novel\src\main\resources\assests" />
+		<file:connection workingDir="${file.workingDir}" />
 	</file:config>
 	<os:object-store name="Object_store_Stats" doc:name="Stats Object store" doc:id="ea437885-e0de-469b-b74f-71acebc4db02" persistent="false" />
 	<os:object-store name="Object_store_Monitoring" doc:name="Monitoring Object store" doc:id="f2eb8abd-c479-4967-84d2-2d566d3d8d2d" />
