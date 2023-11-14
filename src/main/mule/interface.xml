@@ -18,4 +18,8 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 		<http:listener doc:name="Listener" doc:id="1cc19b0c-6278-4551-824d-f0254588ba19" config-ref="HTTP_Listener_config" path="/novel-content" allowedMethods="GET"/>
 		<flow-ref doc:name="print-novel" doc:id="9ad50f63-9ec0-43ab-bf35-7f999b7bd8b1" name="print-novel"/>
 	</flow>
+	<flow name="DELETE-novel-content" doc:id="9705cbca-5c2c-4f3a-8acc-c065ada75f8c" >
+		<http:listener doc:name="Listener" doc:id="797793b6-bb65-4207-86d5-df1a544fb5d3" config-ref="HTTP_Listener_config" path="/novel-content" allowedMethods="DELETE" />
+		<flow-ref doc:name="delete-novel" doc:id="12e975ac-85e3-4d34-aaa1-f78dfbe6319e" name="print-novel" />
+	</flow>
 </mule>

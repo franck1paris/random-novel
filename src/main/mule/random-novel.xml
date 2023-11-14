@@ -112,4 +112,8 @@ vars.charactersTranslatedMonthly]]]></os:value>
 		<file:read doc:name="Read" doc:id="e81ca09e-8460-402f-b40f-7f4ac7c49917" config-ref="File_Config" path="novel.txt" />
 		<logger level="INFO" doc:name="print novel" doc:id="0098d42a-0da0-4ca2-b2d9-b454c35ff214" message="#[payload]"/>
 	</sub-flow>
+	<sub-flow name="delete-novel" doc:id="d2d00586-2d29-4247-b588-1bee87ba236c" >
+		<file:delete doc:name="Delete" doc:id="e8ebd03f-0bb6-4cad-b68b-e733eebdd9d6" config-ref="File_Config" path="novel.txt"/>
+		<logger level="INFO" doc:name="delete novel" doc:id="92912845-61e3-490f-8bc3-d8f6ee65a3ef" message="Delete completed" />
+	</sub-flow>
 </mule>
