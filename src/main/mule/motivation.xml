@@ -73,7 +73,7 @@ output application/json
 var dateTime = (now() as String {format: "dd_MM-HH_mm"})
 output application/json
 ---
-dateTime]'>
+dateTime]' objectStore="Object_store_Stats">
 			<os:value ><![CDATA[#[%dw 2.0
 output application/json
 ---
