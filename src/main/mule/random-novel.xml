@@ -45,6 +45,10 @@ vars.word]]></ee:set-variable>
 		</ee:transform>
 			<flow-ref doc:name="translate-word" doc:id="a3df2326-b43e-4b3a-857d-5e85a6d6c0c3" name="translate-word" />
 			<set-variable doc:name="Update prev_lang" doc:id="3b74100f-ae69-4cfc-82c3-d2353b374719" variableName="prev_lang" value="#[payload]" />
+			<set-variable value="#[%dw 2.0
+output application/json
+---
+(vars.wordsWritten default 0) + 1]" doc:name="increment wordsWritten" doc:id="a4230fdd-472e-436f-98ee-c6f1d62bcb3d" variableName="wordsWritten" />
 		</foreach>
 		<file:write doc:name="Add word to novel" doc:id="fbc81a44-ef89-4627-84f9-3df3064469c9" config-ref="File_Config" path="novel.txt" mode="APPEND">
 			<file:content><![CDATA[#[%dw 2.0
@@ -52,11 +56,14 @@ output text/plain
 ---
 vars.word ++ " "]]]></file:content>
 		</file:write>
-		<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;(vars.wordsWritten default 0) + 1]" doc:name="increment wordsWritten" doc:id="b99f5a77-0e37-40d1-bd0d-c0c3ae26f7b4" variableName="wordsWritten" />
 		<choice doc:name="Choice" doc:id="5af149a4-7264-4ba4-bd16-96d88fa3e2ca" >
-			<when expression="#[vars.durationSession &gt; 0 and vars.charactersTranslatedMonthly &lt; p(&quot;deepl.monthlyLimit&quot;) and vars.charactersTranslatedDaily &lt; p('deepl.dailyLimit')]">
+			<when expression="#[(vars.durationSession mod 50) == 0 and (vars.durationSession &gt; 0 and vars.charactersTranslatedMonthly &lt; p(&quot;deepl.monthlyLimit&quot;) and vars.charactersTranslatedDaily &lt; p('deepl.dailyLimit'))]">
 				<set-variable value="#[vars.durationSession - 1]" doc:name="decrement durationSession" doc:id="9910c64b-ea2a-4e93-88f7-b29e7259a7b9" variableName="durationSession" />
-				<flow-ref doc:name="core-session" doc:id="b1a44d92-91a4-47d1-af95-394e254a1e3c" name="core-session" />
+				<flow-ref doc:name="still-motivated-verifier" doc:id="b1a44d92-91a4-47d1-af95-394e254a1e3c" name="still-motivated-verifier" />
+			</when>
+			<when expression="#[vars.durationSession &gt; 0 and vars.charactersTranslatedMonthly &lt; p(&quot;deepl.monthlyLimit&quot;) and vars.charactersTranslatedDaily &lt; p('deepl.dailyLimit')]">
+				<set-variable value="#[vars.durationSession - 1]" doc:name="decrement durationSession" doc:id="6ccdfff0-7cf5-4aeb-a4cf-7ca3b1a5a062" variableName="durationSession" />
+				<flow-ref doc:name="core-session" doc:id="1909e1f8-ece0-4e4e-9318-d456f812763c" name="core-session" />
 			</when>
 			<otherwise>
 				<logger level="INFO" doc:name="End of session" doc:id="c3fec640-6168-4c95-b644-7656fdbc742d" message="End of session" />
@@ -71,7 +78,7 @@ vars.word ++ " "]]]></file:content>
 				<ee:set-variable variableName="durationSession"><![CDATA[%dw 2.0
 output application/json
 ---
-2 as Number]]></ee:set-variable>
+313 as Number]]></ee:set-variable>
 				<ee:set-variable variableName="wordsWritten"><![CDATA[%dw 2.0
 output application/java
 ---

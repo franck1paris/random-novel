@@ -1,0 +1,7 @@
+%dw 2.0
+
+type auto_7812ed52_f0f8_4cdb_8066_23247a607e02_Output_Variables_currentMotivation = {|
+  time: String, 
+  motivation: Number
+|}
+
