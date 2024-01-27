@@ -8,57 +8,25 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
 	<sub-flow name="motivational-verifier" doc:id="dd005f64-7c68-4cee-b378-de90edf2a148" >
-		<set-payload value='#[%dw 2.0
-output application/json
----
-[{
-	"time": "00",
-	"motivation": 15.0
-},
-  {
-	"time": "01",
-	"motivation": 15.0
-},
-  {
-	"time": "02",
-	"motivation": 7.5
-},
-  {
-	"time": "08",
-	"motivation": 45.0
-},
-  {
-	"time": "09",
-	"motivation": 37.5
-},
-  {
-	"time": "10",
-	"motivation": 37.5
-},
-  {
-	"time": "11",
-	"motivation": 30.0
-},
-  {
-	"time": "12",
-	"motivation": 30.0
-},
-  {
-	"time": "13",
-	"motivation": 7.5
-},
-  {
-	"time": "14",
-	"motivation": 7.5
-},
-  {
-	"time": "15",
-	"motivation": 7.5
-},
-  {
-	"time": "23",
-	"motivation": 100.0
-}]]' doc:name="Motivation array" doc:id="acaccb29-af15-469b-ad0b-e435598d0f15" />
+		<set-payload value='#[%dw 2.0&#10;output application/json&#10;---&#10;[{&#10;	"time": "08",&#10;	"motivation": 90&#10;},
+  {&#10;	"time": "09",&#10;	"motivation": 75&#10;},
+  {&#10;	"time": "10",&#10;	"motivation": 75&#10;},
+  {&#10;	"time": "11",&#10;	"motivation": 60&#10;},
+  {&#10;	"time": "12",&#10;	"motivation": 60&#10;},
+  {&#10;	"time": "14",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "15",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "16",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "17",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "18",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "19",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "20",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "21",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "22",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "23",&#10;	"motivation": 100&#10;},
+  {&#10;	"time": "23",&#10;	"motivation": 100&#10;},
+  {&#10;	"time": "00",&#10;	"motivation": 30&#10;},
+  {&#10;	"time": "01",&#10;	"motivation": 30&#10;},
+  {&#10;	"time": "02",&#10;	"motivation": 15&#10;}]]' doc:name="Motivation array" doc:id="acaccb29-af15-469b-ad0b-e435598d0f15" />
 		<set-variable value='#[%dw 2.0
 var currentHour = now() as String {format: "HH"}
 output application/json

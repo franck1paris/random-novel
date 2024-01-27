@@ -10,7 +10,7 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
 http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="2a557750-2e22-496c-ad90-705173848a01" basePath="/" >
-		<http:listener-connection host="0.0.0.0" port="${https.private.port}" />
+		<http:listener-connection host="0.0.0.0" port="8081" />
 	</http:listener-config>
 	<http:request-config name="DeepL_HTTP_Request_configuration" doc:name="DeepL HTTP Request configuration" doc:id="831faeb5-f60e-45f3-802c-5f05997fa444">
 		<http:request-connection protocol="HTTPS" host="${deepl.host}" port="${deepl.port}"/>
