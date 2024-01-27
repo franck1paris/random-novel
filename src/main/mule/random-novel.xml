@@ -1,54 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
-	xmlns="http://www.mulesoft.org/schema/mule/core"
-	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
 http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
-http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
-	<sub-flow name="fetch-littre-word" doc:id="8a80b740-b42c-41d3-a473-0c7c4141fcb0">
-		<logger level="INFO" doc:name="Before dictionnary call" doc:id="4acb9742-e341-4504-89a6-e4faa3548afb" message="Before dictionnary call" />
-		<http:request method="GET" doc:name="GET word from Littre " doc:id="f3245246-4ce8-45d7-80d2-3713bc516d75" url="${littre.url}" target="responseLittre"/>
-		<set-variable value='#[import * from dw::core::Strings&#10;output application/json&#10;var h2Div = substringBefore(substringAfter(vars.responseLittre, "h2&gt;"), "&lt;/h2")&#10;var h2DivTrim = if (h2Div contains " ") substringBefore(h2Div, " ") else h2Div&#10;---&#10;if (h2DivTrim contains ",")&#10;    substringBefore(h2DivTrim, ",")&#10;else&#10;    h2DivTrim]' doc:name="Extract word from HTML" doc:id="0b47825f-3fe5-40fe-a606-ae3f12054412" variableName="word"/>
-		<choice doc:name="Choice" doc:id="ca43b4b8-d58c-4b6f-92b5-890b4b76b077" >
-			<when expression="#[isEmpty(vars.word)]">
-				<logger level="INFO" doc:name="After dictionnary call" doc:id="2e5d89c8-d2b3-4d02-85ec-552e3ebd7e82" message="After dictionnary call, the word was lost, fetching a new one." />
-				<flow-ref doc:name="fetch-littre-word" doc:id="4b9e9bcb-9fd9-47b0-8300-49b6cfeb6d9f" name="fetch-littre-word" />
-			</when>
-			<otherwise >
-				<logger level="INFO" doc:name="After dictionnary call" doc:id="77c9c7fc-5dd5-4840-ab98-349b826f536b" message="After dictionnary call, the word is: #[vars.word]" />
-			</otherwise>
-		</choice>
-	</sub-flow>
-	<sub-flow name="translate-word" doc:id="c167ca1d-7a89-4135-99c3-79b16f3ad040" >
-		<logger level="INFO" doc:name="Before DeepL call" doc:id="00c896f9-9107-47b9-abcf-3044aad67f49" message='#["Translation from " ++ vars.source_lang ++ " into " ++ vars.target_lang]' />
-		<set-variable value='#[%dw 2.0&#10;output application/x-www-form-urlencoded&#10;---&#10;{&#10;  "text": vars.word,&#10;  "source_lang": vars.source_lang default "FR",&#10;  "target_lang": vars.target_lang default "EN"&#10;}]' doc:name="Format request body" doc:id="4a60c473-20c0-4c43-8962-24879849cbb0" variableName="deepl_body"/>
-		<http:request method="POST" doc:name="GET translate from DeepL" doc:id="d25c8509-3dcc-429f-9091-608a14563128" config-ref="DeepL_HTTP_Request_configuration" path="${deepl.path}" target="responseDeepl">
-			<http:body ><![CDATA[#[vars.deepl_body]]]></http:body>
-			<http:headers><![CDATA[#[output application/java
----
-{
-	"Authorization" : "DeepL-Auth-Key " ++ p("secure::deepl.auth.key")
-}]]]></http:headers>
-		</http:request>
-		<set-variable value='#[%dw 2.0&#10;output application/json&#10;---&#10;vars.responseDeepl.translations[0].text]' doc:name="Extract word from JSON" doc:id="5481a2f4-9518-4dff-8c1c-3802a13d7b06" variableName="word" />
-		<logger level="INFO" doc:name="After DeepL call" doc:id="1fb51740-59f0-4e66-a546-ee16bac2a07a" message='#[output application/json&#10;---&#10;"After translation in " ++ vars.target_lang ++ ": " ++ vars.word]' />
-	</sub-flow>
-	<flow name="random-novelFlow" doc:id="40642680-0aa4-4792-87ff-1eeb1b9ad2a1" >
-		<scheduler doc:name="Scheduler" doc:id="5e32fcd9-513d-40e1-abaf-b23df7bcb1c7" >
-			<scheduling-strategy >
-				<fixed-frequency frequency="30" timeUnit="MINUTES"/>
-			</scheduling-strategy>
-		</scheduler>
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<sub-flow name="core-session" doc:id="c216d882-1b6c-4857-90b6-5a99890b0812">
 		<flow-ref doc:name="fetch-littre-word" doc:id="a49de072-5762-40c8-b01c-33a2d6c49660" name="fetch-littre-word" />
-		<ee:transform doc:name="Set lang_array, init prev_lang" doc:id="433fe1f0-2f59-4f7c-be7f-cf941c91dac8" >
-			<ee:message >
+		<ee:transform doc:name="Set lang_array, init prev_lang" doc:id="433fe1f0-2f59-4f7c-be7f-cf941c91dac8">
+			<ee:message>
 			</ee:message>
-			<ee:variables >
-				<ee:set-variable variableName="lang_array" ><![CDATA[%dw 2.0
+			<ee:variables>
+				<ee:set-variable variableName="lang_array"><![CDATA[%dw 2.0
 output application/json
 ---
 [ "JA", "DE", "PL", "IT", "NL", "FR" ]]]></ee:set-variable>
-				<ee:set-variable variableName="prev_lang" ><![CDATA[%dw 2.0
+				<ee:set-variable variableName="prev_lang"><![CDATA[%dw 2.0
 output application/json
 ---
 "FR"]]></ee:set-variable>
@@ -76,5 +46,74 @@ vars.word]]></ee:set-variable>
 			<flow-ref doc:name="translate-word" doc:id="a3df2326-b43e-4b3a-857d-5e85a6d6c0c3" name="translate-word" />
 			<set-variable doc:name="Update prev_lang" doc:id="3b74100f-ae69-4cfc-82c3-d2353b374719" variableName="prev_lang" value="#[payload]" />
 		</foreach>
-	</flow>
+		<file:write doc:name="Add word to novel" doc:id="fbc81a44-ef89-4627-84f9-3df3064469c9" config-ref="File_Config" path="novel.txt" mode="APPEND">
+			<file:content><![CDATA[#[%dw 2.0
+output text/plain
+---
+vars.word ++ " "]]]></file:content>
+		</file:write>
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;(vars.wordsWritten default 0) + 1]" doc:name="increment wordsWritten" doc:id="b99f5a77-0e37-40d1-bd0d-c0c3ae26f7b4" variableName="wordsWritten" />
+		<choice doc:name="Choice" doc:id="5af149a4-7264-4ba4-bd16-96d88fa3e2ca" >
+			<when expression="#[vars.durationSession &gt; 0 and vars.charactersTranslatedMonthly &lt; p(&quot;deepl.monthlyLimit&quot;) and vars.charactersTranslatedDaily &lt; p('deepl.dailyLimit')]">
+				<set-variable value="#[vars.durationSession - 1]" doc:name="decrement durationSession" doc:id="9910c64b-ea2a-4e93-88f7-b29e7259a7b9" variableName="durationSession" />
+				<flow-ref doc:name="core-session" doc:id="b1a44d92-91a4-47d1-af95-394e254a1e3c" name="core-session" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="End of session" doc:id="c3fec640-6168-4c95-b644-7656fdbc742d" message="End of session" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="writing-session" doc:id="1fa11c6d-f067-45d0-a950-e6539d411ef0" >
+		<os:retrieve-all doc:name="Retrieve all from monitoring" doc:id="82775e4b-953f-424e-998f-548fc416f77c" objectStore="Object_store_Monitoring" target="monitoring" />
+		<ee:transform doc:name="init durationSession, wordsWritten, charactersTranslated" doc:id="c27e839b-ac93-4a78-a61a-aeff3fa85732">
+			<ee:message />
+			<ee:variables>
+				<ee:set-variable variableName="durationSession"><![CDATA[%dw 2.0
+output application/json
+---
+2 as Number]]></ee:set-variable>
+				<ee:set-variable variableName="wordsWritten"><![CDATA[%dw 2.0
+output application/java
+---
+(vars.monitoring.wordsWritten default 0) as Number]]></ee:set-variable>
+				<ee:set-variable variableName="charactersTranslatedDaily"><![CDATA[%dw 2.0
+var currentHour = now() as String {format: "HH"}
+output application/java
+---
+(if (currentHour == "00") 0 else (vars.monitoring.charactersTranslatedDaily default 0)) as Number]]></ee:set-variable>
+				<ee:set-variable variableName="charactersTranslatedMonthly"><![CDATA[%dw 2.0
+var currentDay = now() as String {format: "dd"}
+output application/java
+---
+(if (currentDay == "01") 0 else (vars.monitoring.charactersTranslatedMonthly default 0)) as Number]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<flow-ref doc:name="core-session" doc:id="d458ac64-3c62-43f6-8510-20da2d5830ab" name="core-session" />
+		<os:store doc:name="Store wordsWritten in monitoring" doc:id="374c6b79-0dfb-4d6e-890e-482105a3f983" key="wordsWritten" objectStore="Object_store_Monitoring">
+			<os:value><![CDATA[#[%dw 2.0
+output application/json
+---
+vars.wordsWritten]]]></os:value>
+		</os:store>
+		<os:store doc:name="StoreStore charactersTranslatedDaily in monitoring" doc:id="b5577019-3e33-4c5c-8232-79db85b658f5" key="charactersTranslatedDaily" failOnNullValue="false" objectStore="Object_store_Monitoring">
+			<os:value><![CDATA[#[%dw 2.0
+output application/json
+---
+vars.charactersTranslatedDaily]]]></os:value>
+		</os:store>
+		<os:store doc:name="StoreStore charactersTranslatedMonthly in monitoring" doc:id="ae72ad10-2611-452d-a555-553d3b9a9644" key="charactersTranslatedMonthly" failOnNullValue="false" objectStore="Object_store_Monitoring">
+			<os:value><![CDATA[#[%dw 2.0
+output application/json
+---
+vars.charactersTranslatedMonthly]]]></os:value>
+		</os:store>
+	</sub-flow>
+	<sub-flow name="print-novel" doc:id="a505f6f7-5b9c-4806-9576-1c27fd5dce58" >
+		<file:read doc:name="Read" doc:id="e81ca09e-8460-402f-b40f-7f4ac7c49917" config-ref="File_Config" path="novel.txt" />
+		<logger level="INFO" doc:name="print novel" doc:id="0098d42a-0da0-4ca2-b2d9-b454c35ff214" message="#[payload]"/>
+	</sub-flow>
+	<sub-flow name="delete-novel" doc:id="d2d00586-2d29-4247-b588-1bee87ba236c" >
+		<file:delete doc:name="Delete" doc:id="e8ebd03f-0bb6-4cad-b68b-e733eebdd9d6" config-ref="File_Config" path="novel.txt"/>
+		<logger level="INFO" doc:name="delete novel" doc:id="92912845-61e3-490f-8bc3-d8f6ee65a3ef" message="Delete completed" />
+	</sub-flow>
 </mule>

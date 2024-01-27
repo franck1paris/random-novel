@@ -1,0 +1,4 @@
+%dw 2.0
+
+type auto_1fa11c6d_f067_45d0_a950_e6539d411ef0_Output_Variables_isMotivated = Boolean
+

@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:os="http://www.mulesoft.org/schema/mule/os" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/os http://www.mulesoft.org/schema/mule/os/current/mule-os.xsd">
+	<sub-flow name="motivational-verifier" doc:id="dd005f64-7c68-4cee-b378-de90edf2a148" >
+		<set-payload value='#[%dw 2.0&#10;output application/json&#10;---&#10;[{&#10;	"time": "08",&#10;	"motivation": 90&#10;},
+  {&#10;	"time": "09",&#10;	"motivation": 75&#10;},
+  {&#10;	"time": "10",&#10;	"motivation": 75&#10;},
+  {&#10;	"time": "11",&#10;	"motivation": 60&#10;},
+  {&#10;	"time": "12",&#10;	"motivation": 60&#10;},
+  {&#10;	"time": "14",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "15",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "16",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "17",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "18",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "19",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "20",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "21",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "22",&#10;	"motivation": 50&#10;},
+  {&#10;	"time": "23",&#10;	"motivation": 100&#10;},
+  {&#10;	"time": "23",&#10;	"motivation": 100&#10;},
+  {&#10;	"time": "00",&#10;	"motivation": 30&#10;},
+  {&#10;	"time": "01",&#10;	"motivation": 30&#10;},
+  {&#10;	"time": "02",&#10;	"motivation": 15&#10;}]]' doc:name="Motivation array" doc:id="acaccb29-af15-469b-ad0b-e435598d0f15" />
+		<set-variable value='#[%dw 2.0
+var currentHour = now() as String {format: "HH"}
+output application/json
+---
+(payload filter(value, index) -&gt; (value.time == currentHour))[0]]' doc:name="Extract current motivation" doc:id="04db6859-4299-4ac8-b5f5-fa386467179b" variableName="currentMotivation"/>
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;(round((randomInt(100) + randomInt(100) + randomInt(100)) / 3) + 1)]" doc:name="randomPick" doc:id="cce7a6aa-8f16-4ec6-81d2-fd8b8ce22aeb" variableName="randomPick"/>
+		<set-variable value="#[%dw 2.0
+output application/json
+---
+(vars.randomPick &lt;= (vars.currentMotivation.motivation default -1))]" doc:name="Calculate isMotivated" doc:id="e8b2d5e8-5b17-40be-ad40-7fd5ecb9d6aa" variableName="isMotivated"/>
+		<os:store doc:name="Store stats" doc:id="602b6315-4465-44c1-8bd3-32ba4c662029" key='#[%dw 2.0
+var dateTime = (now() as String {format: "dd_MM-HH_mm"})
+output application/json
+---
+dateTime]' objectStore="Object_store_Stats">
+			<os:value ><![CDATA[#[%dw 2.0
+output application/json
+---
+{
+	"randomPick": vars.randomPick,
+	"motivation": (vars.randomPick <= (vars.currentMotivation.motivation default -1))
+}]]]></os:value>
+		</os:store>
+	</sub-flow>
+	<sub-flow name="motivation-core" doc:id="1678a9ef-5306-4e87-90da-e5d2cafd907f" >
+		<flow-ref doc:name="motivational-verifier" doc:id="b9359243-fc75-400a-8e4b-e9dd36632ab7" name="motivational-verifier" />
+		<choice doc:name="Choice" doc:id="09e2b401-298f-4887-ae34-f3a1705db4ca">
+			<when expression="#[vars.isMotivated]">
+<logger level="INFO" doc:name="Start writing" doc:id="67c72425-25f2-4061-aee2-2c56db8cb216" message="Okey let's do this!" />
+				<flow-ref doc:name="writing-session" doc:id="16a05304-21d5-4aba-bca6-1bb69c437f7e" name="writing-session" />
+				<logger level="INFO" doc:name="Finished writing" doc:id="dc983538-3775-4e94-a7c1-acc90532038d" message="And that's it! For now at least..." />
+			
+</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Not writing now" doc:id="7e2ff1bf-13f0-4083-91be-bfbbda3736ce" message="Not feeling it right now... Let's play a bit before I start." />
+			</otherwise>
+		</choice>
+	</sub-flow>
+	<sub-flow name="print-statistics" doc:id="cd22ba6b-15a7-46c2-9c09-04246273ada4" >
+		<os:retrieve-all doc:name="Retrieve all" doc:id="37b6a424-60d1-4080-a971-146bfcdec462" objectStore="Object_store_Stats" />
+		<ee:transform doc:name="format stats to json" doc:id="0c873538-5c36-48a5-80c5-987d4d661ece">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+(payload mapObject ((value, index) -> {(index) : read(value, "application/json")}))]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="print stats" doc:id="00884f12-2344-4cc4-a6b1-ddedd89263a4" message="#[payload]" />
+	</sub-flow>
+</mule>

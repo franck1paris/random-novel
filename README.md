@@ -7,21 +7,26 @@ For the random part, it will be in the choosing of words with a random pick from
 This random process of translation back and forth will have to be done 3 times for each word. The limit of 500,000 characters per month for [free](https://www.deepl.com/en/docs-api#:~:text=You%20can%20access%20the%20DeepL,characters%20per%20month%20for%20free.) of the [Deepl API](https://www.deepl.com/docs-api) will be our limit. Thus, extending the duration of writing of the novel, just as a writer is taking a lot of time to pick correctly the words composing the novel.
 The 500,000 characters limit will be disctributed along the month based on the number of days minus some days to rest (just as a real human) set as 7 days per month of rest.
 On the working days, we have to establish a schedule also. The random has again to play it's part here to establish if the algorithm wants to write the novel at that time or not, based on this table:
-| Time | Want to work (%) |
-|-------|------------------|
-| 00:00 | 05.0 |
-| 01:00 | 02.5 |
-| 02:00 | 00.0 |
-| 03:00 | 00.0 |
-| ..... | 00.0 |
-| 08:00 | 15.0 |
-| 09:00 | 12.5 |
-| 10:00 | 10.0 |
-| 11:00 | 10.0 |
-| 12:00 | 10.0 |
-| 13:00 | 00.0 |
-| 14:00 | 00.0 |
-| 15:00 | 02.5 |
-| ..... | 00.0 |
-| 23:00 | 32.5 |
+| Time  | Want to work (%) |
+| ----- | ---------------- |
+| 08:00 | 90               |
+| 09:00 | 75               |
+| 10:00 | 75               |
+| 11:00 | 60               |
+| 12:00 | 60               |
+| 14:00 | 50               |
+| 15:00 | 50               |
+| 16:00 | 50               |
+| 17:00 | 50               |
+| 18:00 | 50               |
+| 19:00 | 50               |
+| 20:00 | 50               |
+| 21:00 | 50               |
+| 22:00 | 50               |
+| 23:00 | 100              |
+| 23:00 | 100              |
+| 00:00 | 30               |
+| 01:00 | 30               |
+| 02:00 | 15               |
 To keep in mind: there is a quota of characters to write per day which means that each days between 23:00 and 23:59 the "want to work" percentage is more a rush of what is left to write.
+9

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<sub-flow name="fetch-littre-word" doc:id="aa05601b-38fd-4f3f-aab7-bdd443e8f53d" >
+		<logger level="INFO" doc:name="Before dictionnary call" doc:id="27fbbf71-136e-4525-bea6-dab605b53df7" message="Before dictionnary call" />
+		<http:request method="GET" doc:name="GET word from Littre " doc:id="f91cdb93-8d04-44c3-9cd5-e0c3e18c1d36" url="${littre.url}" target="responseLittre" />
+		<set-variable value='#[import * from dw::core::Strings
+output application/json
+var h2Div = substringBefore(substringAfter(vars.responseLittre, "h2&gt;"), "&lt;/h2")
+var h2DivTrim = if (h2Div contains " ") substringBefore(h2Div, " ") else h2Div
+---
+if (h2DivTrim contains ",")
+    substringBefore(h2DivTrim, ",")
+else
+    h2DivTrim]' doc:name="Extract word from HTML" doc:id="fb776eff-26ee-4d2b-815d-8af47bd29d34" variableName="word" />
+		<choice doc:name="Choice" doc:id="431ec126-ec87-4345-9497-51034570fbf0" >
+			<when expression="#[isEmpty(vars.word)]" >
+				<logger level="INFO" doc:name="After dictionnary call" doc:id="d85e34e0-5043-4c72-b74d-229b1da1ded2" message="After dictionnary call, the word was lost, fetching a new one." />
+				<flow-ref doc:name="fetch-littre-word" doc:id="88f1e584-5292-484a-ab88-25d5e4704c21" name="fetch-littre-word" />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="After dictionnary call" doc:id="06c43c81-e832-4ed5-a2f1-7494e46603b9" message="After dictionnary call, the word is: #[vars.word]" />
+			</otherwise>
+		</choice>
+	</sub-flow>
+</mule>
