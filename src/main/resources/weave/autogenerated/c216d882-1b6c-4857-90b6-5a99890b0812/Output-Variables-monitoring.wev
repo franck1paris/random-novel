@@ -1,0 +1,8 @@
+%dw 2.0
+
+type auto_c216d882_1b6c_4857_90b6_5a99890b0812_Output_Variables_monitoring = { _?: java_io_Serializable }
+type java_io_Serializable = {|  |} {"typeAlias": "Serializable",
+"typeId": "java.io.Serializable"}
+
+
+

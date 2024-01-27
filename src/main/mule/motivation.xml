@@ -65,6 +65,19 @@ output application/json
 			</otherwise>
 		</choice>
 	</sub-flow>
+	<sub-flow name="still-motivated-verifier" doc:id="7812ed52-f0f8-4cdb-8066-23247a607e02" >
+		<flow-ref doc:name="motivational-verifier" doc:id="b12ddee6-c82e-4b8a-a171-08e2c5244ad2" name="motivational-verifier" />
+		<choice doc:name="Choice" doc:id="54ab3ae8-62f1-4e6b-935e-b3ac4afc2df8" >
+			<when expression="#[vars.isMotivated]" >
+				<logger level="INFO" doc:name="Start writing" doc:id="0e7847d0-6149-48bd-9965-a273c5519988" message="Okey let's do this!" />
+				<flow-ref doc:name="core-session" doc:id="5838861f-24bc-414c-8614-319e4807e122" name="core-session" />
+				<logger level="INFO" doc:name="Finished writing" doc:id="d98c6c84-7a94-455c-b594-8a760f668398" message="And that's it! For now at least..." />
+			</when>
+			<otherwise >
+				<logger level="INFO" doc:name="Stopping writing session" doc:id="1bc56ffa-313e-41a7-91be-2bd003262aac" message="Stopping writing session" />
+			</otherwise>
+		</choice>
+	</sub-flow>
 	<sub-flow name="print-statistics" doc:id="cd22ba6b-15a7-46c2-9c09-04246273ada4" >
 		<os:retrieve-all doc:name="Retrieve all" doc:id="37b6a424-60d1-4080-a971-146bfcdec462" objectStore="Object_store_Stats" />
 		<ee:transform doc:name="format stats to json" doc:id="0c873538-5c36-48a5-80c5-987d4d661ece">
